@@ -1,6 +1,9 @@
-#![feature(alloc_error_handler)]
-#![feature(core_intrinsics)]
-#![feature(alloc)]
+#![feature(
+	alloc,
+	core_intrinsics,
+	lang_items,
+	alloc_error_handler
+)]
 
 #![no_std]
 
@@ -12,8 +15,8 @@ extern crate wee_alloc;
 #[macro_use]
 extern crate alloc;
 
-use core::intrinsics;
 use codec::{Encode, Decode};
+use core::panic::PanicInfo;
 
 mod ext;
 
@@ -23,18 +26,18 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[panic_handler]
 #[no_mangle]
-pub fn panic(_info: &::core::panic::PanicInfo) -> ! {
-	unsafe {
-		intrinsics::abort()
-	}
+pub fn panic(_info: &PanicInfo) -> ! {
+	unsafe { core::intrinsics::abort() }
 }
 
 #[alloc_error_handler]
 pub extern fn oom(_: ::core::alloc::Layout) -> ! {
 	unsafe {
-		intrinsics::abort();
+		core::intrinsics::abort();
 	}
 }
+
+#[lang = "eh_personality"] extern fn eh_personality() {}
 
 #[derive(Encode, Decode)]
 enum Action {
